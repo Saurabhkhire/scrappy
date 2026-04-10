@@ -1,0 +1,37 @@
+# Fly.io config — https://fly.io
+# Deploy with: fly launch (first time) then fly deploy
+# Free tier: 3 shared VMs, always on, no sleeping
+
+app = "scrappy-api"          # change to your unique app name
+primary_region = "iad"       # closest region: iad=US-East, lax=US-West, lhr=Europe, sin=Asia
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  PYTHON_CMD = "python3"
+  SCRAPER_TIMEOUT_MS = "28000"
+  DB_PATH = "/app/data/scrappy.db"
+
+# Secrets (set via: fly secrets set JWT_SECRET=xxx ADMIN_PASSWORD=xxx FRONTEND_URL=xxx)
+# fly secrets set JWT_SECRET=$(openssl rand -hex 64)
+# fly secrets set ADMIN_PASSWORD=yourpassword
+# fly secrets set FRONTEND_URL=https://your-scrappy.vercel.app
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = false   # keep alive (free tier allows this)
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[mounts]]
+  source = "scrappy_data"
+  destination = "/app/data"    # SQLite persists here across deploys
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

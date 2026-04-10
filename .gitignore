@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Database
+server/scrappy.db
+server/scrappy.db-shm
+server/scrappy.db-wal
+*.db
+*.db-shm
+*.db-wal
+
+# Environment variables — NEVER commit real .env files
+.env
+server/.env
+client/.env
+# .env.example files are safe to commit (they have no real secrets)
+
+# Build output
+client/dist/
+client/build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

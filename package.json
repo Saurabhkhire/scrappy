@@ -1,0 +1,19 @@
+{
+  "name": "scrappy",
+  "version": "1.0.0",
+  "description": "Web Scraper Marketplace",
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "setup": "npm install && cd server && npm install && cd ../client && npm install",
+    "start": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run start:server\" \"npm run start:client\"",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run preview",
+    "delete-data": "node scripts/delete_all_data.js",
+    "upload-scraper": "node scripts/upload_scraper.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

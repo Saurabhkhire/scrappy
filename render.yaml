@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────────────────────
+#  Render Blueprint — deploys frontend + backend on Render
+#  Data stored in Neon PostgreSQL (free) — survives redeploys
+#
+#  Before deploying:
+#    1. Create a free Neon account at neon.tech
+#    2. Create a project, copy the connection string
+#    3. Add it as DATABASE_URL in Render env vars after deploy
+#       (or set it as a secret below)
+#
+#  URLs after deploy:
+#    Frontend : https://scrappy-ui.onrender.com
+#    Backend  : https://scrappy-api.onrender.com
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Backend API ──────────────────────────────────────────────
+  - type: web
+    name: scrappy-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@scrappy.io
+      - key: ADMIN_PASSWORD
+        value: admin123              # Change this after first deploy!
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: FRONTEND_URL
+        value: https://scrappy-ui.onrender.com
+      - key: PYTHON_CMD
+        value: python3
+      - key: SCRAPER_TIMEOUT_MS
+        value: 25000
+      - key: DATABASE_URL
+        sync: false                  # Render will prompt you to fill this in the dashboard
+                                     # Paste your Neon connection string here
+
+  # ── Frontend Static Site ──────────────────────────────────────
+  - type: web
+    name: scrappy-ui
+    runtime: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    plan: free
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: VITE_API_URL
+        value: https://scrappy-api.onrender.com
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

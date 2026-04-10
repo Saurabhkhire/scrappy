@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-base text-text-base font-sans;
+    background-color: #0a0a10;
+    color: #e2e8f0;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #13131f;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a4a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6366f1;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-surface-2 hover:bg-surface-3 text-text-base border border-border font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2;
+  }
+  .btn-danger {
+    @apply bg-danger/10 hover:bg-danger/20 text-danger border border-danger/30 font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2;
+  }
+  .btn-ghost {
+    @apply hover:bg-surface-2 text-muted hover:text-text-base font-medium px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2;
+  }
+  .card {
+    @apply bg-surface border border-border rounded-xl p-6;
+  }
+  .input {
+    @apply w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-text-base placeholder-muted focus:outline-none focus:border-primary transition-colors;
+  }
+  .label {
+    @apply block text-sm font-medium text-muted mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-python {
+    @apply bg-blue-500/10 text-blue-400 border border-blue-500/20;
+  }
+  .badge-javascript {
+    @apply bg-yellow-500/10 text-yellow-400 border border-yellow-500/20;
+  }
+  .badge-free {
+    @apply bg-success/10 text-success border border-success/20;
+  }
+  .badge-paid {
+    @apply bg-primary/10 text-primary-light border border-primary/20;
+  }
+  .badge-per-run {
+    @apply bg-accent/10 text-accent border border-accent/20;
+  }
+  .tab {
+    @apply px-4 py-2.5 text-sm font-medium text-muted hover:text-text-base transition-colors border-b-2 border-transparent hover:border-surface-3;
+  }
+  .tab-active {
+    @apply text-primary border-b-2 border-primary;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+  .glow-card {
+    @apply relative overflow-hidden;
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+  .glow-card:hover {
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 0 20px rgba(99, 102, 241, 0.1);
+  }
+}
+
+/* Animations */
+.animate-in {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Custom gradient border */
+.gradient-border {
+  position: relative;
+  background: #13131f;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background: linear-gradient(135deg, #6366f1, #06b6d4);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  border-radius: inherit;
+}
+
+/* Prose styles for code */
+pre {
+  @apply bg-surface-2 rounded-lg p-4 overflow-x-auto;
+}
+code {
+  @apply font-mono text-sm;
+}
+
+/* JSON output */
+.json-output {
+  @apply font-mono text-sm bg-surface-2 rounded-lg p-4 overflow-auto max-h-96;
+  color: #a9dc76;
+}

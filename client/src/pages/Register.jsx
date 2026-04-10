@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Bug, Mail, Lock, User, Eye, EyeOff, Coins } from 'lucide-react'
+import { Bug, Mail, Lock, User, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function Register() {
-  const { register } = useAuth()
-  const navigate = useNavigate()
+  const { register, resendVerification } = useAuth()
   const [form, setForm] = useState({ username: '', email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [resending, setResending] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -17,12 +18,50 @@ export default function Register() {
     setLoading(true)
     try {
       await register(form.username, form.email, form.password)
-      toast.success('Account created! You received 100 free credits.')
-      navigate('/')
+      setSubmitted(true)
     } catch (err) {
       toast.error(err.response?.data?.error || 'Registration failed')
     }
     setLoading(false)
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await resendVerification(form.email)
+      toast.success('Verification email resent!')
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to resend email')
+    }
+    setResending(false)
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md animate-in text-center">
+          <div className="w-16 h-16 bg-green-500/10 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={32} className="text-green-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-text-base mb-2">Check your email</h1>
+          <p className="text-muted mb-2">
+            We sent a verification link to
+          </p>
+          <p className="font-semibold text-primary mb-6">{form.email}</p>
+          <p className="text-sm text-muted mb-8">
+            Click the link in the email to activate your account. It expires in 24 hours.
+          </p>
+          <button onClick={handleResend} disabled={resending}
+            className="btn-secondary text-sm">
+            {resending ? 'Sending...' : "Didn't get it? Resend email"}
+          </button>
+          <p className="text-center text-muted text-sm mt-6">
+            Already verified?{' '}
+            <Link to="/login" className="text-primary hover:text-primary-light transition-colors font-medium">Sign in</Link>
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -34,14 +73,6 @@ export default function Register() {
           </div>
           <h1 className="text-3xl font-bold text-text-base">Create account</h1>
           <p className="text-muted mt-2">Join Scrappy and start scraping</p>
-        </div>
-
-        <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-center gap-3">
-          <Coins size={18} className="text-warning shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-text-base">100 free credits on signup</p>
-            <p className="text-xs text-muted">Use credits to run scrapers or purchase access</p>
-          </div>
         </div>
 
         <div className="card">

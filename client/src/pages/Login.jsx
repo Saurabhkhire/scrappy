@@ -5,23 +5,42 @@ import { Bug, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, resendVerification } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null)
+  const [resending, setResending] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setUnverifiedEmail(null)
     try {
       await login(form.email, form.password)
       toast.success('Welcome back!')
       navigate('/')
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed')
+      const data = err.response?.data
+      if (data?.unverified) {
+        setUnverifiedEmail(data.email || form.email)
+      } else {
+        toast.error(data?.error || 'Login failed')
+      }
     }
     setLoading(false)
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await resendVerification(unverifiedEmail)
+      toast.success('Verification email sent! Check your inbox.')
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to resend email')
+    }
+    setResending(false)
   }
 
   return (
@@ -34,6 +53,19 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-text-base">Welcome back</h1>
           <p className="text-muted mt-2">Sign in to your Scrappy account</p>
         </div>
+
+        {unverifiedEmail && (
+          <div className="mb-4 p-4 bg-warning/10 border border-warning/30 rounded-xl">
+            <p className="text-sm font-semibold text-warning mb-1">Email not verified</p>
+            <p className="text-xs text-muted mb-3">
+              Check your inbox for the verification link, or request a new one.
+            </p>
+            <button onClick={handleResend} disabled={resending}
+              className="btn-secondary text-xs py-1.5 px-3">
+              {resending ? 'Sending...' : 'Resend verification email'}
+            </button>
+          </div>
+        )}
 
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -61,12 +93,6 @@ export default function Login() {
               {loading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Sign In'}
             </button>
           </form>
-
-          <div className="mt-4 p-3 bg-surface-2 rounded-lg border border-border">
-            <p className="text-xs text-muted text-center">
-              Admin: <span className="text-primary font-mono">admin@scrappy.io</span> / <span className="text-primary font-mono">admin123</span>
-            </p>
-          </div>
         </div>
 
         <p className="text-center text-muted text-sm mt-6">

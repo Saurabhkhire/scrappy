@@ -75,15 +75,24 @@ function pgToSQLite(sql) {
 async function initSchema(db) {
   await db.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id            VARCHAR(36) PRIMARY KEY,
-      username      TEXT UNIQUE NOT NULL,
-      email         TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      credits       NUMERIC(14,4) DEFAULT 100.0,
-      is_admin      SMALLINT DEFAULT 0,
-      avatar        TEXT,
-      bio           TEXT,
-      created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      id             VARCHAR(36) PRIMARY KEY,
+      username       TEXT UNIQUE NOT NULL,
+      email          TEXT UNIQUE NOT NULL,
+      password_hash  TEXT NOT NULL,
+      credits        NUMERIC(14,4) DEFAULT 100.0,
+      is_admin       SMALLINT DEFAULT 0,
+      email_verified SMALLINT DEFAULT 0,
+      avatar         TEXT,
+      bio            TEXT,
+      created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS email_verifications (
+      id         VARCHAR(36) PRIMARY KEY,
+      user_id    VARCHAR(36) NOT NULL,
+      token      VARCHAR(64) UNIQUE NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS scrapers (
@@ -148,6 +157,18 @@ async function initSchema(db) {
   `);
 }
 
+// Safe migration — adds email_verified column to existing databases
+async function migrateSchema(db) {
+  try {
+    if (IS_POSTGRES) {
+      await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified SMALLINT DEFAULT 0');
+    } else {
+      // SQLite: throws if column already exists — safe to ignore
+      try { await db.query('ALTER TABLE users ADD COLUMN email_verified SMALLINT DEFAULT 0'); } catch {}
+    }
+  } catch {}
+}
+
 async function seedAdmin(db) {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@scrappy.io';
   const { rows } = await db.query('SELECT id FROM users WHERE email = $1', [adminEmail]);
@@ -156,7 +177,7 @@ async function seedAdmin(db) {
     const hash = await bcrypt.hash(password, 10);
     const id = uuidv4();
     await db.query(
-      'INSERT INTO users (id, username, email, password_hash, credits, is_admin) VALUES ($1,$2,$3,$4,$5,1)',
+      'INSERT INTO users (id, username, email, password_hash, credits, is_admin, email_verified) VALUES ($1,$2,$3,$4,$5,1,1)',
       [id, process.env.ADMIN_USERNAME || 'admin', adminEmail, hash, 999999]
     );
     console.log(`✓ Admin created: ${adminEmail} / ${password}`);
@@ -166,6 +187,7 @@ async function seedAdmin(db) {
 async function initDb() {
   const db = getPool();
   await initSchema(db);
+  await migrateSchema(db);
   await seedAdmin(db);
   return db;
 }
